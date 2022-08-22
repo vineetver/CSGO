@@ -1,21 +1,23 @@
 """
 This file contain functions used to create the dataset for the analysis and model.
 """
+from typing import Tuple
 
 import pandas as pd
 from bs4 import BeautifulSoup
+import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import re
 
 
-def get_monday(start_year: str, end_year: str) -> list:
+def get_team_ranking_dates(start_year: str, end_year: str) -> list:
     """
     This function returns a list of monday dates between the start_year and end_year. Since HLTV team rankings are updated
     every week on monday. The first ever recorded ranking is on 2015-10-26.
-    :param start_year: start year of the dataset
-    :param end_year: end year of the dataset
+    :param start_year: year to start collecting team rankings
+    :param end_year:  year to end collecting team rankings
     :return: list of monday dates
     """
     dates = pd.date_range(start=start_year, end=end_year, freq='W-MON').tolist()
@@ -28,9 +30,9 @@ def get_monday(start_year: str, end_year: str) -> list:
     return monday_dates
 
 
-def get_html(url) -> str:
+def get_team_ranking_source(url) -> str:
     """"
-    This function receives the html from the url, scrolls down the page and returns the html.
+    This function reads the html from the url, scrolls down the page and returns the source code for that link.
     :param url: url of the page to be scraped
     :return: html of the page
     """
@@ -41,9 +43,11 @@ def get_html(url) -> str:
     return driver.page_source
 
 
-def parse_team_ranking(html: str, start_date: str, end_date: str) -> list:
+def parse_team_ranking(html: str, start_year: str, end_year: str) -> list:
     """
     This function receives the html and parses it to return a list of teams and their respective rankings.
+    :param start_year: year to start collecting player rankings
+    :param end_year:  year to end collecting player rankings
     :param html: html of the page
     :return: list of teams and their respective rankings
     """
@@ -57,8 +61,44 @@ def parse_team_ranking(html: str, start_date: str, end_date: str) -> list:
         team_name = team.find("span", class_="name").text
         players = team.findAll("div", class_="rankingNicknames")
         playernames = [names.text for names in players]
-        date_range = pd.date_range(start=start_date, end=end_date)
+        date_range = pd.date_range(start=start_year, end=end_year)
         for date in date_range:
             if pd.to_datetime(pd.Timestamp(year=2015, month=10, day=26)) <= date < pd.to_datetime(pd.Timestamp.now()):
                 team_ranking.append([date.strftime('%Y-%m-%d'), team_name, rank, playernames])
     return team_ranking
+
+
+def get_player_ranking_dates(start_year: str, end_year: str) -> tuple[list, list]:
+    """
+    This function returns a tuple of pairs of dates for which the player rankings are available each year. For example,
+    2015-01-01 and 2015-12-31 are the first and last dates for which the player rankings are available for year 2015.
+    :param start_year: year to start collecting player rankings
+    :param end_year:  year to end collecting player rankings
+    :return: tuple of dates
+    """
+    start = pd.date_range(start=start_year, end=end_year, freq='YS').tolist()
+    end = pd.date_range(start=start_year, end=end_year, freq='Y').tolist()
+    return start, end
+
+
+def get_player_ranking_source(url: str) -> bytes:
+    """
+    This function reads the html from the , scrolls down the page and returns the source code for that link.
+    :param url: url of the page to be scraped
+    :return: html of the page
+    """
+
+    source = requests.get(url)
+    return source.content
+
+
+def parse_player_ranking(html: bytes):
+    """
+    This function parses the html of the player ranking page and returns a list of players and other various statistics. For example
+    player name, age, rating, K/D ratio, ADR, etc.
+    :param html: html of the player ranking page
+    :return:
+    """
+    driver = BeautifulSoup(html, 'html.parser')
+    player_list = driver.find('table', class_='stats-table player-ratings-table')
+    return player_list
