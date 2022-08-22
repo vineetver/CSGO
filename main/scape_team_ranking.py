@@ -1,10 +1,6 @@
 from src.dataset.create_dataset import get_team_ranking_dates, get_team_ranking_source, parse_team_ranking
 import pandas as pd
-
-HEADERS = {
-    "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Safari/605.1.15"
-}
+import time
 
 URL = 'https://www.hltv.org/ranking/teams'
 START_YEAR = '2015'
@@ -14,6 +10,7 @@ END_YEAR = '2023'
 def main():
     monday_dates = get_team_ranking_dates(START_YEAR, END_YEAR)
     df = pd.DataFrame()
+    start_time = time.time()
     for monday in monday_dates:
         month = str(monday.strftime('%B')).lower()
         day = str(monday.strftime('%d'))
@@ -24,7 +21,7 @@ def main():
 
         teams_dataframe = pd.DataFrame(team_ranking, columns=['date', 'team', 'rank', 'players'])
         df = pd.concat([df, teams_dataframe], axis=0)
-        print(df)
+        print(f'Completed {monday} [==========================] Time: {time.time() - start_time:.2}s')
     df.to_csv('../data/teams.csv', index=False)
 
 

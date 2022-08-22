@@ -1,14 +1,10 @@
 """
 This file contain functions used to create the dataset for the analysis and model.
 """
-from typing import Tuple
 
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 import re
 
 
@@ -30,17 +26,15 @@ def get_team_ranking_dates(start_year: str, end_year: str) -> list:
     return monday_dates
 
 
-def get_team_ranking_source(url) -> str:
+def get_team_ranking_source(url: str) -> str:
     """"
     This function reads the html from the url, scrolls down the page and returns the source code for that link.
     :param url: url of the page to be scraped
     :return: html of the page
     """
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    driver.get(url)
-
-    return driver.page_source
+    source = requests.get(url)
+    return source.content
 
 
 def parse_team_ranking(html: str, start_year: str, end_year: str) -> list:
@@ -52,19 +46,18 @@ def parse_team_ranking(html: str, start_year: str, end_year: str) -> list:
     :return: list of teams and their respective rankings
     """
     soup = BeautifulSoup(html, 'html.parser')
-    team_list = soup.findAll("div", class_="ranked-team standard-box")
+    team_list = soup.findAll('div', class_='ranked-team standard-box')
     pattern = re.compile('\#(\d+)')
     team_ranking = []
-    for team in team_list:
-        rank = pattern.match(
-            team.find("span", class_="position").text).groups(1)[0]
-        team_name = team.find("span", class_="name").text
-        players = team.findAll("div", class_="rankingNicknames")
-        playernames = [names.text for names in players]
-        date_range = pd.date_range(start=start_year, end=end_year)
-        for date in date_range:
-            if pd.to_datetime(pd.Timestamp(year=2015, month=10, day=26)) <= date < pd.to_datetime(pd.Timestamp.now()):
-                team_ranking.append([date.strftime('%Y-%m-%d'), team_name, rank, playernames])
+    dates = get_team_ranking_dates(start_year, end_year)
+    for date in dates:
+        for team in team_list:
+            rank = pattern.match(
+                team.find("span", class_='position').text).groups(1)[0]
+            team_name = team.find('span', class_='name').text
+            players = team.findAll('div', class_='rankingNicknames')
+            playernames = [names.text for names in players]
+            team_ranking.append([date, rank, team_name, playernames])
     return team_ranking
 
 
