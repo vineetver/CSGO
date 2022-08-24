@@ -1,4 +1,4 @@
-from src.dataset.create_dataset import get_team_ranking_dates, get_team_ranking_source, parse_team_ranking
+from src.dataset.create_dataset import get_team_ranking_dates, parse_team_ranking, get_source
 import pandas as pd
 import time
 
@@ -15,7 +15,7 @@ def main():
         month = str(monday.strftime('%B')).lower()
         day = str(monday.strftime('%d'))
         year = monday.strftime('%Y')
-        team_ranking_source = get_team_ranking_source(f'{URL}/{year}/{month}/{day}')
+        team_ranking_source = get_source(f'{URL}/{year}/{month}/{day}')
         team_ranking = parse_team_ranking(team_ranking_source, START_YEAR, END_YEAR)
 
         teams_dataframe = pd.DataFrame(team_ranking, columns=['date', 'rank', 'team', 'players'])

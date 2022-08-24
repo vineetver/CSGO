@@ -26,7 +26,7 @@ def get_team_ranking_dates(start_year: str, end_year: str) -> list:
     return monday_dates
 
 
-def get_team_ranking_source(url: str) -> bytes:
+def get_source(url: str) -> bytes:
     """"
     This function reads the html from the url, scrolls down the page and returns the source code for that link.
     :param url: url of the page to be scraped
@@ -72,17 +72,6 @@ def get_player_ranking_dates(start_year: str, end_year: str) -> tuple[list, list
     start = pd.date_range(start=start_year, end=end_year, freq='MS').tolist()
     end = pd.date_range(start=start_year, end=end_year, freq='M').tolist()
     return start, end
-
-
-def get_player_ranking_source(url: str) -> bytes:
-    """
-    This function reads the html from the , scrolls down the page and returns the source code for that link.
-    :param url: url of the page to be scraped
-    :return: html of the page
-    """
-
-    source = requests.get(url)
-    return source.content
 
 
 def parse_player_ranking(html: bytes):

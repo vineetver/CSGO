@@ -1,4 +1,4 @@
-from src.dataset.create_dataset import get_player_ranking_dates, get_player_ranking_source, parse_player_ranking
+from src.dataset.create_dataset import get_player_ranking_dates, parse_player_ranking, get_source
 import pandas as pd
 import time
 
@@ -14,7 +14,7 @@ def main():
         start_date = str(start_date.strftime('%Y-%m-%d'))
         end_date = str(end_date.strftime('%Y-%m-%d'))
         player_overview_url = f'https://www.hltv.org/stats/players?startDate={start_date}&endDate={end_date}&rankingFilter=Top30'
-        player_overview_html = get_player_ranking_source(player_overview_url)
+        player_overview_html = get_source(player_overview_url)
         player_overview_data = parse_player_ranking(player_overview_html)
 
         player_overview_dataframe = pd.DataFrame(player_overview_data,
