@@ -26,7 +26,7 @@ def get_team_ranking_dates(start_year: str, end_year: str) -> list:
     return monday_dates
 
 
-def get_team_ranking_source(url: str) -> str:
+def get_team_ranking_source(url: str) -> bytes:
     """"
     This function reads the html from the url, scrolls down the page and returns the source code for that link.
     :param url: url of the page to be scraped
@@ -37,7 +37,7 @@ def get_team_ranking_source(url: str) -> str:
     return source.content
 
 
-def parse_team_ranking(html: str, start_year: str, end_year: str) -> list:
+def parse_team_ranking(html: bytes, start_year: str, end_year: str) -> list:
     """
     This function receives the html and parses it to return a list of teams and their respective rankings.
     :param start_year: year to start collecting player rankings
@@ -69,8 +69,8 @@ def get_player_ranking_dates(start_year: str, end_year: str) -> tuple[list, list
     :param end_year:  year to end collecting player rankings
     :return: tuple of dates
     """
-    start = pd.date_range(start=start_year, end=end_year, freq='YS').tolist()
-    end = pd.date_range(start=start_year, end=end_year, freq='Y').tolist()
+    start = pd.date_range(start=start_year, end=end_year, freq='MS').tolist()
+    end = pd.date_range(start=start_year, end=end_year, freq='M').tolist()
     return start, end
 
 
@@ -88,10 +88,61 @@ def get_player_ranking_source(url: str) -> bytes:
 def parse_player_ranking(html: bytes):
     """
     This function parses the html of the player ranking page and returns a list of players and other various statistics. For example
-    player name, age, rating, K/D ratio, ADR, etc.
+    player name, rating, K/D ratio, K/D Diff, etc.
     :param html: html of the player ranking page
     :return:
     """
     driver = BeautifulSoup(html, 'html.parser')
-    player_list = driver.find('table', class_='stats-table player-ratings-table')
-    return player_list
+    player_overview_stats = driver.find('table', class_='stats-table player-ratings-table')
+    player_overview_table_body = player_overview_stats.find('tbody')
+    player_overview_table_rows = player_overview_table_body.find_all('tr')
+    player_overview_data = []
+    for rows in player_overview_table_rows:
+        player_col = rows.find_all('td', class_='playerCol')
+        for col in player_col:
+            player_country = col.find('img').get('alt')
+            player_name = col.find('a').text
+            player_link = 'https://www.hltv.org' + col.find('a').get('href')
+            start_date = re.search('startDate=(\d{4}-\d{2}-\d{2})', player_link).groups(1)[0]
+            end_date = re.search('endDate=(\d{4}-\d{2}-\d{2})', player_link).groups(1)[0]
+
+        team_col = rows.find_all('td', class_='teamCol')
+        for col in team_col:
+            team_name = col.find('img').get('title')
+            team_link = col.find('a').get('href')
+
+        maps_played = rows.find_all('td')[2]
+        for col in maps_played:
+            map_number = col.text
+
+        rounds_played = rows.find_all('td', class_='statsDetail gtSmartphone-only')
+        for col in rounds_played:
+            rounds = col.text
+
+        kd_diff_col = rows.find_all('td', class_='kdDiffCol won')
+        for col in kd_diff_col:
+            kd_diff = col.text[1:]
+
+        kd_col = rows.find_all('td', class_='statsDetail')
+        for col in kd_col:
+            kd = col.text
+
+        rating_col = rows.find_all('td', class_='ratingCol')
+        for col in rating_col:
+            rating = col.text
+
+        player_overview_data.append([start_date, end_date, player_name, player_country, player_link, team_name,
+                                     team_link, map_number, rounds, kd_diff, kd, rating])
+
+    return player_overview_data
+
+
+def parse_player_detailed_ranking(html: bytes):
+    """
+    This function parses the html of the player detailed ranking page and returns a list of players and other various detailed statistics.
+    For example player age, DPR, ADR, KAST, etc.
+    :param html: html of the player detailed ranking page
+    :return: list of players and other various detailed statistics
+    """
+    driver = BeautifulSoup(html, 'html.parser')
+    player_detailed_stats = driver.find('table', class_='stats-section stats-player stats-player-overview')

@@ -10,9 +10,6 @@ setup(
     install_requires=[],
     entry_points={
         'console_scripts': [
-            'preprocess_data = main.preprocess:main',
-            'feature_engineering = main.feature_engineering:main',
-            'train_model = main.train_model:main',
         ],
     }
 )

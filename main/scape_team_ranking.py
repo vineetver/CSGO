@@ -15,14 +15,14 @@ def main():
         month = str(monday.strftime('%B')).lower()
         day = str(monday.strftime('%d'))
         year = monday.strftime('%Y')
-
         team_ranking_source = get_team_ranking_source(f'{URL}/{year}/{month}/{day}')
         team_ranking = parse_team_ranking(team_ranking_source, START_YEAR, END_YEAR)
 
-        teams_dataframe = pd.DataFrame(team_ranking, columns=['date', 'team', 'rank', 'players'])
+        teams_dataframe = pd.DataFrame(team_ranking, columns=['date', 'rank', 'team', 'players'])
         df = pd.concat([df, teams_dataframe], axis=0)
         print(f'Completed {monday} [==========================] Time: {time.time() - start_time:.2}s')
-    df.to_csv('../data/teams.csv', index=False)
+
+    df.to_parquet('../data/teams.csv', index=False, engine='pyarrow')
 
 
 if __name__ == '__main__':
