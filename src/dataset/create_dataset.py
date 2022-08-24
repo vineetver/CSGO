@@ -126,7 +126,7 @@ def parse_player_ranking(html: bytes):
     return player_overview_data
 
 
-def parse_player_detailed_ranking(html: bytes):
+def parse_detailed_player_ranking(html: bytes):
     """
     This function parses the html of the player detailed ranking page and returns a list of players and other various detailed statistics.
     For example player age, DPR, ADR, KAST, etc.
