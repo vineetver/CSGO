@@ -74,7 +74,7 @@ def get_player_ranking_dates(start_year: str, end_year: str) -> tuple[list, list
     return start, end
 
 
-def parse_player_ranking(html: bytes):
+def parse_player_ranking(html: bytes) -> list:
     """
     This function parses the html of the player ranking page and returns a list of players and other various statistics. For example
     player name, rating, K/D ratio, K/D Diff, etc.
@@ -126,7 +126,7 @@ def parse_player_ranking(html: bytes):
     return player_overview_data
 
 
-def parse_detailed_player_ranking(html: bytes):
+def parse_detailed_player_ranking(html: bytes, url: str) -> list:
     """
     This function parses the html of the player detailed ranking page and returns a list of players and other various detailed statistics.
     For example player age, DPR, ADR, KAST, etc.
@@ -134,4 +134,51 @@ def parse_detailed_player_ranking(html: bytes):
     :return: list of players and other various detailed statistics
     """
     driver = BeautifulSoup(html, 'html.parser')
-    player_detailed_stats = driver.find('table', class_='stats-section stats-player stats-player-overview')
+    start_date = re.search('startDate=(\d{4}-\d{2}-\d{2})', url).groups(1)[0]
+    end_date = re.search('endDate=(\d{4}-\d{2}-\d{2})', url).groups(1)[0]
+    player_name = re.search('/stats/players/(\d+)/(.*?)\?', url).groups(1)[1]
+    advanced_player_stats = []
+    summary_data_breakdown_values = [
+        value for value in driver.find_all(class_='summaryStatBreakdownDataValue')
+    ]
+
+    advanced_data_breakdown_values = [
+        value for value in driver.find_all(class_='stats-row')
+    ]
+
+    rating_vs_opponents = [
+        value for value in driver.find_all(class_='rating-breakdown')
+    ]
+
+    rating_2 = summary_data_breakdown_values[0].text
+    dpr = summary_data_breakdown_values[1].text
+    kast = summary_data_breakdown_values[2].text
+    impact = summary_data_breakdown_values[3].text
+    adr = summary_data_breakdown_values[4].text
+    kpr = summary_data_breakdown_values[5].text
+
+    total_kills = advanced_data_breakdown_values[0].find_all('span')[1].text
+    headshot_percentage = advanced_data_breakdown_values[1].find_all('span')[1].text
+    total_deaths = advanced_data_breakdown_values[2].find_all('span')[1].text
+    damage_per_round = advanced_data_breakdown_values[4].find_all('span')[1].text
+    grenade_damage_per_round = advanced_data_breakdown_values[5].find_all('span')[1].text
+    kills_per_round = advanced_data_breakdown_values[8].find_all('span')[1].text
+    assists_per_round = advanced_data_breakdown_values[9].find_all('span')[1].text
+    deaths_per_round = advanced_data_breakdown_values[10].find_all('span')[1].text
+    saved_by_teammates_per_round = advanced_data_breakdown_values[11].find_all('span')[1].text
+    saved_teammates_per_round = advanced_data_breakdown_values[12].find_all('span')[1].text
+
+    rating_vs_top_5 = rating_vs_opponents[0].find_all('div')[0].text
+    rating_vs_top_10 = rating_vs_opponents[1].find_all('div')[0].text
+    rating_vs_top_20 = rating_vs_opponents[2].find_all('div')[0].text
+    rating_vs_top_30 = rating_vs_opponents[3].find_all('div')[0].text
+    rating_vs_top_50 = rating_vs_opponents[4].find_all('div')[0].text
+
+    advanced_player_stats.append(
+        [start_date, end_date, player_name, rating_2, dpr, kast, impact, adr, kpr, total_kills, headshot_percentage, total_deaths,
+         damage_per_round, grenade_damage_per_round,
+         kills_per_round, assists_per_round, deaths_per_round, saved_by_teammates_per_round,
+         saved_teammates_per_round, rating_vs_top_5,
+         rating_vs_top_10, rating_vs_top_20, rating_vs_top_30, rating_vs_top_50])
+
+    return advanced_player_stats
