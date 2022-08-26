@@ -126,17 +126,18 @@ def parse_player_ranking(html: bytes) -> list:
     return player_overview_data
 
 
-def parse_detailed_player_ranking(html: bytes, url: str) -> list:
+def parse_detailed_player_ranking(html: bytes, start_date: str, end_date: str, player_name: str) -> list:
     """
     This function parses the html of the player detailed ranking page and returns a list of players and other various detailed statistics.
     For example player age, DPR, ADR, KAST, etc.
+    :param player_name: name of the player
+    :param start_date: start date of the player ranking
+    :param end_date: end date of the player ranking
+    :param url: url of the player detailed ranking page
     :param html: html of the player detailed ranking page
     :return: list of players and other various detailed statistics
     """
     driver = BeautifulSoup(html, 'html.parser')
-    start_date = re.search('startDate=(\d{4}-\d{2}-\d{2})', url).groups(1)[0]
-    end_date = re.search('endDate=(\d{4}-\d{2}-\d{2})', url).groups(1)[0]
-    player_name = re.search('/stats/players/(\d+)/(.*?)\?', url).groups(1)[1]
     advanced_player_stats = []
     summary_data_breakdown_values = [
         value for value in driver.find_all(class_='summaryStatBreakdownDataValue')

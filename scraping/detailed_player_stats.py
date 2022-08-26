@@ -17,7 +17,7 @@ def main():
         end_date = re.search('endDate=(\d{4}-\d{2}-\d{2})', url).groups(1)[0]
         player_name = re.search('/stats/players/(\d+)/(.*?)\?', url).groups(1)[1]
         detailed_player_overview_html = get_source(url)
-        detailed_player_overview = parse_detailed_player_ranking(detailed_player_overview_html, url)
+        detailed_player_overview = parse_detailed_player_ranking(detailed_player_overview_html, start_date, end_date, player_name)
 
         detailed_player_overview_dataframe = pd.DataFrame(
             detailed_player_overview, columns=[
