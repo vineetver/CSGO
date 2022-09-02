@@ -1,15 +1,17 @@
-from setuptools import setup, find_packages
+from pathlib import Path
+from setuptools import find_namespace_packages, setup
+
+BASE_DIR = Path(__file__).parent
+with open(Path(BASE_DIR, "requirements.txt"), "r") as file:
+    required_packages = [ln.strip() for ln in file.readlines()]
 
 setup(
     name='CSGO',
     version='0.1',
-    description='This package contains the code for the CSGO competitive scene analysis',
+    description='This package contains code for CSGO analysis',
     author='Vineet Verma',
     author_email='vineetver@hotmail.com',
-    packages=find_packages(exclude=['tests']),
-    install_requires=[],
-    entry_points={
-        'console_scripts': [
-        ],
-    }
+    url="https://github.com/vineetver/CSGO",
+    packages=find_namespace_packages(exclude=['test']),
+    install_requires=[required_packages]
 )
