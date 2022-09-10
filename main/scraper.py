@@ -1,12 +1,11 @@
 from src.dataset.create_dataset import get_team_ranking_dates, parse_team_ranking, get_source, \
-parse_detailed_player_ranking,  get_player_ranking_dates, parse_player_ranking
+    parse_detailed_player_ranking, get_player_ranking_dates, parse_player_ranking
 import pandas as pd
 import time
 import typer
 from config import config
 from config.config import logger
 from pathlib import Path
-
 
 app = typer.Typer()
 
@@ -58,7 +57,6 @@ def get_player_stats():
     logger.info(f'✅ Finished scraping for player ranking and saved data to {Path(config.DATA_DIR, "player_overview.csv")} ✅')
 
 
-
 @app.command()
 def get_detailed_player_stats():
     logger.info('🏁 Starting up scraper for detailed player ranking 🏁')
@@ -81,10 +79,12 @@ def get_detailed_player_stats():
                 'rating_vs_top_5', 'rating_vs_top_10', 'rating_vs_top_20', 'rating_vs_top_30', 'rating_vs_top_50'
             ])
         df = pd.concat([df, detailed_player_overview_dataframe], axis=0)
-        logger.info(f'🕐 Completed {start_date} --- {end_date} for {player_name} [==========================] Time: {time.time() - start_time:.2}s 🕐')
+        logger.info(
+            f'🕐 Completed {start_date} --- {end_date} for {player_name} [==========================] Time: {time.time() - start_time:.2}s 🕐')
 
     df.to_parquet(Path(config.DATA_DIR, 'detailed_player_stats.parquet'), index=False, engine='pyarrow')
-    logger.info(f'✅ Finished scraping for detailed player ranking and saved data to {Path(config.DATA_DIR, "detailed_player_stats.parquet")} ✅')
+    logger.info(
+        f'✅ Finished scraping for detailed player ranking and saved data to {Path(config.DATA_DIR, "detailed_player_stats.parquet")} ✅')
 
 
 if __name__ == '__main__':

@@ -4,6 +4,28 @@
 
 What makes a player great in CS:GO? Is it aim? Communication? Experience? Or is it the ability to think ten steps ahead of the enemy and always be one step forward? I aim to answer all these questions and more through a dataset of every professional CS:GO match played since 2015, which I scraped from HLTV.org. The dataset contains players' statistics, teams, events and matches.
 
+## Setting up the environment
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+## Serving
+
+### Command Line
+
+- #### Scraping
+Run scraping jobs to get the latest data from HLTV.org.
+
+```bash
+python main/scraper.py get-team-ranking
+python main/scraper.py get-player-stats 
+python main/scraper.py get_detailed_player_stats 
+```
+
 ## About the Data
 
 | Column Name            | Description                                                                                                                                                                                                                                                 |
